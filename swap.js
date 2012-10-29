@@ -1,135 +1,68 @@
-/*
-TODO
+//Tracking Script
+//Author: Garrett Tichy
 
-add function to change standard image
-http://javascript.internet.com/miscellaneous/change-image.html
+//google ORGANIC
+var gorganicnum = 'google-organic';
 
-add optional formatting with regular expressions
+//yahoo ORGANIC
+var yorganicnum = 'yahoo-organic';
 
+//bing ORGANIC
+var borganicnum = 'bing-organic';
 
-*/
+//google PPC
+var gppcnum = 'google-ppc';
 
-//if google ORGANIC 
-var gorganicnum = '';
+//yahoo PPC
+var yppcnum = 'yahoo-ppc';
 
-//if yahoo ORGANIC
-var yorganicnum = '';
+//bing PPC
+var bppcnum = 'bing-ppc';
 
-//if bing ORGANIC
-var borganicnum = '';
-
-//if google PPC
-var gppcnum = '';
-
-//if yahoo PPC
-var yppcnum = '';
-
-//if bing PPC
-var bppcnum = '';
-
-//if other
-var defaultNum = '';
-
-//list of your 'branded' search terms separated by commas only
-var brandedTerms = 'dontdeletethis';
-
-//variables to deal with our CSS background header image
-var idToChangeClass = 'wrapper-a';
-var gBGurl = '../images/wrapper_0210.jpg';
-var yBGurl = '../images/wrapper_0186.jpg';
-var bBGurl = '../images/wrapper_0743.jpg';
+//default
+var defaultNum = 'haphav-default';
 
 
-//create an array out of the branded terms list
-var brandedTermsArray = brandedTerms.split(',');
-
-function _uGC(l,n,s) {
- if (!l || l=="" || !n || n=="" || !s || s=="") return "-";
- var i,i2,i3,c="-";
- i=l.indexOf(n);
- i3=n.indexOf("=")+1;
- if (i > -1) {
-  i2=l.indexOf(s,i); if (i2 < 0) { i2=l.length; }
-  c=l.substring((i+i3),i2);
- }
- return c;
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for(var i=0;i < ca.length;i++) {
+		var c = ca[i];
+		while (c.charAt(0)==' ') c = c.substring(1,c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+	}
+	return null;
 }
+
 
 // 
 // Get the __utmz cookie value. This is the cookies that 
 // stores all campaign information. 
 // 
-var z = _uGC(document.cookie, '__utmz=', ';'); 
-// 
-// The cookie has a number of name-value pairs. 
-// Each identifies an aspect of the campaign. 
-// 
-// utmcsr  = campaign source 
-// utmcmd  = campaign medium 
-// utmctr  = campaign term (keyword) 
-// utmcct  = campaign content  
-// utmccn  = campaign name 
-// utmgclid = unique identifier used when AdWords auto tagging is enabled 
-// 
-// This is very basic code. It separates the campaign-tracking cookie 
-// and populates a variable with each piece of campaign info. 
-// 
-var source  = _uGC(z, 'utmcsr=', '|'); 
-var medium  = _uGC(z, 'utmcmd=', '|'); 
-var term    = _uGC(z, 'utmctr=', '|'); 
-var content = _uGC(z, 'utmcct=', '|'); 
-var campaign = _uGC(z, 'utmccn=', '|'); 
-var gclid   = _uGC(z, 'utmgclid=', '|'); 
-// 
-// The gclid is ONLY present when auto tagging has been enabled. 
-// All other variables, except the term variable, will be '(not set)'. 
-// Because the gclid is only present for Google AdWords we can 
-// populate some other variables that would normally 
-// be left blank. 
-// 
-if (gclid !="-") { 
-      source = 'google'; 
-      medium = 'cpc'; 
-} 
-// Data from the custom segmentation cookie can also be passed 
-// back to your server via a hidden form field 
-var csegment = _uGC(document.cookie, '__utmv=', ';'); 
-if (csegment != '-') { 
-      var csegmentex = /[1-9]*?\.(.*)/;
-      csegment    = csegment.match(csegmentex); 
-      csegment    = csegment[1]; 
-} else { 
-      csegment = '(not set)'; 
-} 
+var utmz = readCookie('__utmz'); //using a cookie reading function
+var vals = (function() {
 
-//
-// One more bonus piece of information.  
-// We're going to extract the number of visits that the visitor
-// has generated.  It's also stored in a cookie, the __utma cookis
-// 
-var a = _uGC(document.cookie, '__utma=', ';');
-var aParts = a.split(".");
-var nVisits = aParts[5];
+        var pairs = utmz.split('.').slice(4).join('.').split('|');
+        var ga = {};
+        for (var i = 0; i < pairs.length; i++) {
+            var temp = pairs[i].split('=');
+                ga[temp[0]] = temp[1];
+        }
+        return ga;
+    })();// 
+
+var source  = vals.utmcsr; 
+var medium  = vals.utmcmd;
+var term    = vals.utmctr; 
+var content = vals.utmcct; 
+var campaign = vals.utmccn; 
+var gclid   = vals.utmgclid; 
 
 
-function isNotBrandedTerm(){
 
-        for (i=0;i<brandedTermsArray.length;i++)
-        {
-                if (term.toLowerCase().indexOf(brandedTermsArray[i]) != -1){ // Made case insensitive
-                //if(term == brandedTermsArray[i]){
-                        return false;
-                }
-        } 
-        
-        return true;
-}
-
-
-//return the proper tag based on the rules
-function getTag(){
-        
-        if(source == 'google' && (medium == "organic" || medium =="localpack")){
+//return the proper phone number based on the rules
+function getParam(){
+        if(source == 'google' && medium == "organic"){
                 return gorganicnum;
         } else if(source == 'yahoo' && medium == "organic"){
                 return yorganicnum;
@@ -175,8 +108,7 @@ function replaceQueryString( queryString, keys, newValues ) {
 
 
 
-function displayTag(){
-	if(isNotBrandedTerm()){
+function displayParam(){
 		var testdiv = $('.afftag');
 		var NumberSpans = testdiv[0].getElementsByTagName('span');
 
@@ -189,7 +121,7 @@ function displayTag(){
 			var tobereplaced = ['tag'];
     
 			// The respective values you want to assign
-			var replacements = [getTag()];
+			var replacements = [getParam()];
     
 			var new_query_string = replaceQueryString( old_addr_parts[1], tobereplaced, replacements );
     
@@ -198,5 +130,5 @@ $(NumberSpans[i]).find('a').attr('href',old_addr_parts[0] + '?' + new_query_stri
 
 
 				}//CLOSE IF
-		} //CLOSE FOR
+		//CLOSE FOR
 	}
